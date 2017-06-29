@@ -244,7 +244,7 @@ type clusterState struct {
 	slots [][]*clusterNode
 }
 
-func newClusterState(nodes *clusterNodes, slots []ClusterSlot) (*clusterState, error) {
+func newClusterState(nodes *clusterNodes, slots []ClusterSlot, origin string) (*clusterState, error) {
 	c := clusterState{
 		nodes: nodes,
 		slots: make([][]*clusterNode, hashtag.SlotNumber),
@@ -253,7 +253,12 @@ func newClusterState(nodes *clusterNodes, slots []ClusterSlot) (*clusterState, e
 	for _, slot := range slots {
 		var nodes []*clusterNode
 		for _, slotNode := range slot.Nodes {
-			node, err := c.nodes.Get(slotNode.Addr)
+			addr := slotNode.Addr
+			if addr == "127.0.0.1" {
+				addr = origin
+			}
+
+			node, err := c.nodes.Get(addr)
 			if err != nil {
 				return nil, err
 			}
@@ -661,7 +666,7 @@ func (c *ClusterClient) reloadSlots() (*clusterState, error) {
 		return nil, err
 	}
 
-	return newClusterState(c.nodes, slots)
+	return newClusterState(c.nodes, slots, node.Client.opt.Addr)
 }
 
 // reaper closes idle connections to the cluster.
