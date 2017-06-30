@@ -3,6 +3,7 @@ package redis
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -254,7 +255,7 @@ func newClusterState(nodes *clusterNodes, slots []ClusterSlot, origin string) (*
 		var nodes []*clusterNode
 		for _, slotNode := range slot.Nodes {
 			addr := slotNode.Addr
-			if addr == "127.0.0.1" {
+			if strings.HasPrefix(addr, "127.") {
 				addr = origin
 			}
 
